@@ -48,6 +48,8 @@ services:
     environment:
       - POSTGRES_USER=kong
       - POSTGRES_DB=kong
+    volumes:
+      - db-data-kong-postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 10s
@@ -86,3 +88,21 @@ services:
       interval: 5s
       retries: 10
     restart: on-failure
+
+  kong-dashboard:
+    image: pgbi/kong-dashboard:v3.3.0
+    container_name: kong-dashboard
+    command: start --kong-url http://kong:8001
+    ports:
+      - 8080:8080
+    expose:
+      - 8080
+    links:
+      - kong:kong
+    depends_on:
+      kong:
+        condition: service_started
+    restart: on-failure
+
+volumes:
+  db-data-kong-postgres:
